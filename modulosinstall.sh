@@ -2,85 +2,86 @@
 
 # Diretório de trabalho
 WORK_DIR="/etc/xis"
+mkdir -p $WORK_DIR
 cd $WORK_DIR
 
-echo "Iniciando instalação dos módulos..."
+echo "========================================="
+echo "Iniciando instalação dos módulos"
+echo "Diretório: $WORK_DIR"
+echo "========================================="
 
-# Função para verificar download
+# Função para baixar arquivo com verificação
 download_file() {
     local url=$1
     local output=$2
     
-    echo "Baixando $output..."
-    wget -q --show-progress -O "$output" "$url"
+    echo "Baixando: $output"
+    wget -q --show-progress -O "$output" "$url" 2>&1
     
-    if [ $? -eq 0 ]; then
-        echo "✓ $output baixado com sucesso"
-        chmod 777 "$output"
+    if [ -f "$output" ] && [ -s "$output" ]; then
+        local size=$(stat -c%s "$output")
+        echo "✓ $output baixado com sucesso ($size bytes)"
+        chmod 755 "$output" 2>/dev/null
         return 0
     else
-        echo "✗ Erro ao baixar $output"
+        echo "✗ Falha ao baixar $output"
         return 1
     fi
 }
 
-# Remover arquivos antigos
-echo "Removendo arquivos antigos..."
-rm -f atlasdata.sh atlascreate.sh atlasteste.sh atlasremove.sh delete.py sincronizar.py add.sh rem.sh addteste.sh addsinc.sh remsinc.sh verificador.py
+# Limpar arquivos antigos primeiro
+echo "Limpando arquivos antigos..."
+rm -f *.sh *.py 2>/dev/null
 
-# Lista de arquivos para download com URLs corrigidas
-declare -A FILES=(
-    ["atlascreate.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlascreate.sh"
-    ["add.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/add.sh"
-    ["remsinc.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/remsinc.sh"
-    ["addsinc.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/addsinc.sh"
-    ["rem.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/rem.sh"
-    ["atlasteste.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasteste.sh"
-    ["addteste.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/addteste.sh"  # URL corrigida
-    ["atlasremove.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasremove.sh"
-    ["delete.py"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/delete.py"
-    ["atlasdata.sh"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasdata.sh"
-    ["sincronizar.py"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/sincronizar.py"
-    ["verificador.py"]="https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/verificador.py"  # URL corrigida
-)
+# Lista completa de arquivos para baixar
+echo ""
+echo "Baixando arquivos principais..."
 
-# Baixar todos os arquivos
-SUCCESS=true
-for file in "${!FILES[@]}"; do
-    if ! download_file "${FILES[$file]}" "$file"; then
-        SUCCESS=false
+# Baixar cada arquivo individualmente com URL correta
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlascreate.sh" "atlascreate.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/add.sh" "add.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/remsinc.sh" "remsinc.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/addsinc.sh" "addsinc.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/rem.sh" "rem.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasteste.sh" "atlasteste.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/addteste.sh" "addteste.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasremove.sh" "atlasremove.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/delete.py" "delete.py"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlasdata.sh" "atlasdata.sh"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/sincronizar.py" "sincronizar.py"
+download_file "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/verificador.py" "verificador.py"
+
+# Instalar dos2unix se necessário
+echo ""
+echo "Configurando permissões..."
+apt-get install -y dos2unix > /dev/null 2>&1
+
+# Converter arquivos para formato Unix
+for file in *.sh *.py 2>/dev/null; do
+    if [ -f "$file" ]; then
+        dos2unix "$file" > /dev/null 2>&1
+        echo "✓ Convertido: $file"
     fi
 done
 
-# Instalar dos2unix se necessário
-if ! command -v dos2unix &> /dev/null; then
-    echo "Instalando dos2unix..."
-    apt-get update -qq
-    apt-get install dos2unix -y -qq
-fi
+# Listar todos os arquivos instalados
+echo ""
+echo "========================================="
+echo "Arquivos instalados em $WORK_DIR:"
+echo "========================================="
+ls -lah *.sh *.py 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
 
-# Converter rem.sh para formato Unix
-echo "Convertendo rem.sh para formato Unix..."
-dos2unix rem.sh 2>/dev/null || echo "Aviso: Não foi possível converter rem.sh"
+# Contar arquivos
+total=$(ls -1 *.sh *.py 2>/dev/null | wc -l)
+echo ""
+echo "Total de arquivos: $total"
+echo "========================================="
 
-# Verificar se todos os downloads foram bem-sucedidos
-if [ "$SUCCESS" = true ]; then
-    echo "✓ Todos os módulos foram instalados com sucesso!"
-    
-    # Executar verificador.py se existir
-    if [ -f "verificador.py" ]; then
-        echo "Executando verificador.py..."
-        python3 verificador.py
-    fi
-    
-    # Listar arquivos instalados
+# Executar verificador se existir
+if [ -f "verificador.py" ]; then
     echo ""
-    echo "Arquivos instalados em $WORK_DIR:"
-    ls -la *.sh *.py 2>/dev/null | awk '{print "  - " $9}'
-    
-else
-    echo "✗ Alguns módulos falharam ao baixar. Verifique sua conexão com a internet."
-    exit 1
+    echo "Executando verificador.py..."
+    python3 verificador.py
 fi
 
 echo ""
