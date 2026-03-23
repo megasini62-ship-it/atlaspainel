@@ -14,5 +14,5 @@ wget -O sincronizar.py "https://raw.githubusercontent.com/megasini62-ship-it/atl
 chmod 777 atlascreate.sh add.sh remsinc.sh addsinc.sh rem.sh atlasteste.sh addteste.sh atlasremove.sh delete.py atlasdata.sh sincronizar.py
 apt install dos2unix
 dos2unix rem.sh
-wget "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel//main/verificador.py" -O verificador.py 
+wget "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/verificador.py" -O verificador.py 
 python3 verificador.py
