@@ -1,6 +1,6 @@
 #!/bin/bash
 rm -f atlasdata.sh atlascreate.sh atlasteste.sh atlasremove.sh delete.py sincronizar.py add.sh rem.sh addteste.sh addsinc.sh remsinc.sh
-wget -O atlascreate.sh "https://raw.githubusercontent.com/atlaspaineL/atlasPainel/main/atlascreate.sh"
+wget -O atlascreate.sh "https://raw.githubusercontent.com/megasini62-ship-it/atlaspainel/main/atlascreate.sh"
 wget -O add.sh "https://raw.githubusercontent.com/atlaspaineL/atlasPainel/main/add.sh"
 wget -O remsinc.sh "https://raw.githubusercontent.com/atlaspaineL/atlasPainel/main/remsinc.sh"
 wget -O addsinc.sh "https://raw.githubusercontent.com/atlaspaineL/atlasPainel/main/addsinc.sh"
