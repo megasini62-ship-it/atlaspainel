@@ -1,4 +1,6 @@
 #!/bin/bash
+# rem.sh - Remove usuario V2Ray + SSH (com restart v2ray)
+# Uso: ./rem.sh <uuid> <login>
 
 delete_id() {
     if [ "$#" -ne 2 ]; then
@@ -9,21 +11,15 @@ delete_id() {
     uuidel="$1"
     login="$2"
 
-    invaliduuid() {
-        echo "UUID inválido"
-        exit 1
-    }
-
-    if grep -q "$uuidel" /etc/v2ray/config.json; then
+    if [ -f /etc/v2ray/config.json ] && grep -q "$uuidel" /etc/v2ray/config.json; then
         tmpfile=$(mktemp)
         jq --arg uuid "$uuidel" 'del(.inbounds[0].settings.clients[] | select(.id == $uuid))' /etc/v2ray/config.json > "$tmpfile" && mv "$tmpfile" /etc/v2ray/config.json
-
-        sudo systemctl restart v2ray
-        echo "Objeto com 'id' igual a $uuidel removido"
-        bash atlasremove.sh "$login"
-    else
-        invaliduuid
+        sudo systemctl restart v2ray 2>/dev/null
+        echo "UUID $uuidel removido"
     fi
+
+    # CORRECAO: usa caminho absoluto
+    bash /etc/xis/atlasremove.sh "$login"
 }
 
 delete_id "$1" "$2"
